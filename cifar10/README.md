@@ -1,6 +1,6 @@
 ##  Using a siamese like network to achive  87.3%  ap  after  256 epochs training
 
-![image](https://github.com/lhwcv/tf_classication/new/master/cifar10/doc/net.PNG)
+![](https://github.com/lhwcv/tf_classication/blob/master/cifar10/doc/net.PNG)
 
 ##  Trained Model 
 
