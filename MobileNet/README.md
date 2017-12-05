@@ -4,7 +4,8 @@ Please refer Google's paper [MobileNets: Efficient Convolutional Neural Networks
 
 
 ## Accuracy on Dogs Vs Cats Dataset
+We using 2w images to train and 5k images to val in train.zip
 
 | Model | Width Multiplier | Accuracy-Top1
 |--------|:---------:|:------:|
-| MobileNet |1.0| | 90.51% 
+| MobileNet |1.0| 95.8% |
