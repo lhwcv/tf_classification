@@ -7,7 +7,7 @@ def data_augmentation(img,crop_h,crop_w):
     img = tf.random_crop(img,(crop_h,crop_w,3))
     #img = tf.contrib.image.rotate(img, angle)
     img = tf.image.random_flip_left_right(img)
-    img = tf.image.random_saturation(img, lower=0.8, upper=1.2)
+    img = tf.image.random_saturation(img, lower=0.7, upper=1.3)
     img = tf.image.random_brightness(img, max_delta=16. / 255.)
     return img
 

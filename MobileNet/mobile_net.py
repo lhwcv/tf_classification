@@ -5,6 +5,8 @@ import  slim.nets.mobilenet_v1 as mobilenet_v1
 _R_MEAN = 123.68
 _G_MEAN = 116.78
 _B_MEAN = 103.94
+
+##https://stackoverflow.com/questions/42240696/how-could-i-use-batch-normalization-in-tensorflow-slim
 def _depthwise_separable_conv(inputs,
                               num_filters,
                               width_multiplier,
@@ -17,15 +19,15 @@ def _depthwise_separable_conv(inputs,
         kernel_size=[3,3],
         depth_multiplier=1.0,
         stride=stride,
-        normalizer_fn=slim.batch_norm,
         scope=scope+'/dw_conv'
     )
+    bn = slim.batch_norm(depthwise_conv, scope=scope + '/dw_bn')
 
-    pointwise_conv = slim.convolution2d(depthwise_conv,num_filters,
-                                        kernel_size=[1,1],normalizer_fn=slim.batch_norm,
+    pointwise_conv = slim.convolution2d(bn,num_filters,
+                                        kernel_size=[1,1],
                                         scope=scope+'/pw_conv')
-
-    return pointwise_conv
+    bn = slim.batch_norm(pointwise_conv, scope=scope + '/pw_bn')
+    return bn
 
 def mobile_net_inference(images,num_classes,is_training=True,width_multiplier=1.0,scope='MobileNet'):
     """
@@ -45,14 +47,15 @@ def mobile_net_inference(images,num_classes,is_training=True,width_multiplier=1.
                             outputs_collections=[end_points]):
             with slim.arg_scope([slim.batch_norm],
                                 is_training=is_training,
+                                decay=0.95,
                                 activation_fn=tf.nn.relu
                                ):
                ## https://www.quora.com/Whats-the-difference-between-batch-normalization-and-fused-batch-norm-in-TensorFlow
                ## See Table 1 in the paper
 
                net = slim.conv2d(mean_centered_input,num_outputs=round(32*width_multiplier),
-                                        kernel_size=[3,3], stride=2,normalizer_fn=slim.batch_norm,scope='conv_1')
-
+                                        kernel_size=[3,3], stride=2,scope='conv_1')
+               net = slim.batch_norm(net, scope='conv_1/bn')
                net = _depthwise_separable_conv(net, 64, width_multiplier, 'conv_ds2')
                net = _depthwise_separable_conv(net, 128, width_multiplier, 'conv_ds3',stride=2)
                net = _depthwise_separable_conv(net, 128, width_multiplier, 'conv_ds4')
@@ -88,8 +91,11 @@ if __name__ =='__main__':
     model_variables = slim.get_model_variables(scope='MobileNet')
     logits_slim, end_points_slim = mobilenet_v1.mobilenet_v1(inputs,scope='MobileNetV1')
     model_variables_slim = slim.get_model_variables(scope='MobileNetV1')
+
+
     model_variables_maping={}
     for i,j in zip(model_variables,model_variables_slim):
+        print(i)
         if 'Logits' not in j.name:
             model_variables_maping[j.name] = i
     print(len(model_variables_maping))
